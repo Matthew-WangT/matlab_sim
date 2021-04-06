@@ -1,43 +1,52 @@
 %reference:CSDN
 clear;clc;
-T=30;%仿真时间
-Tt=0.05;%仿真间隔
+T=3;%仿真时间
+Tt=0.001;%仿真间隔
 P=[0 0];%子弹的初始位置
-V=[50 50];%子弹初速度
-M=2;%子弹质量
-C=0.35;%空气阻力系数
+M=3.2e-3;%子弹质量3.2g
+C=1.55;%空气阻力系数0.35
 rou=1.29;%空气密度
-D=0.06;%子弹直径
+D=17e-3;%子弹直径17mm
 S=pi*D^2/4;%子弹迎风面积
 k=0.5*C*rou*S/M;%空气阻力加速度总系数
-af=-k*[V(1)^2,V(2)^2];%空气阻力系数
+disp('k=')
+disp(k);
+%af=-k*[V(1)^2,V(2)^2];%空气阻力系数
 ag=[0,-9.8];%重力加速度
-pi=3.14159;
 figure;
 title("the trajectory");
 hold on;
-
-initial_V=50;
-target=[150,10];%打击目标
+%xlim(0,10);
+%%
+initial_V=15;%子弹初速度15 and 18
+target=[4.9,-0.2];%打击目标
+error_thresh = 0.01;
+%%
 plot(target(1),target(2),'o');hold on;
-start_angle=atan((target(2)-P(2))/(target(1)-P(1)))+0.1*pi/2;
+start_angle=atan((target(2)-P(2))/(target(1)-P(1)));%+0.1*pi/2;
 disp('start angle(deg):');
 disp(start_angle*180/pi);
 flag=0;%是否找到目标
 time=1;
-for iter=1:1:50
+for iter=1:1:300
     P=[0 0];
-    theta = time/50*0.4*pi;
-    if(theta>start_angle)
+    theta = start_angle+time/300*45/180*pi;
+    %if(1)
+    if(theta>=(start_angle-0.0))
         V=[initial_V*cos(theta) initial_V*sin(theta)];
         af=-k*[V(1)^2,V(2)^2];
         for i=0:Tt:T
-            if P(2)<0
-                disp('到达地面，仿真结束');
+%             if P(1)>(target(1)-0.1)
+            if P(1)>(target(1)+0.1)
+%                 disp('到达地面，仿真结束');
+%                 disp('到达目标点下方0.1m，仿真结束');
+                break;
+            end
+            if P(2)<(-0.5)
                 break;
             end
             error = (target(1)-P(1))^2+(target(2)-P(2))^2;
-            if sqrt(error)<2
+            if sqrt(error)<error_thresh
                 plot(P(1),P(2),'x');hold on;
                 disp('到达目标点，仿真结束');
                 flag=1;
@@ -49,7 +58,7 @@ for iter=1:1:50
             V=V+a*Tt;
             P=P+V*Tt;
             af=-k*[V(1)^2, V(2)^2];
-            pause(0.01);
+            %pause(0.01);
         end
     end    
     if(flag==1)
